@@ -40,5 +40,5 @@ gen_dist=$3
 ls $project | grep "fasta\$" | rev | cut -d "." -f2- | rev | while read -r file;
 do
 	echo $file
-	qsub -pe round 8 pacbio-pipeline-with-blast.sh $project $file $config_file $gen_dist
+	qsub -pe round 8 scripts/pacbio-pipeline-with-blast.sh $project $file $config_file $gen_dist
 done

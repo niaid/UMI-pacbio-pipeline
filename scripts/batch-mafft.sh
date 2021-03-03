@@ -38,5 +38,5 @@ project=$1
 
 ls $project | grep "fasta\$" | rev | cut -d "." -f2- | rev | while read -r file;
 do
-	qsub mafft.sh $project $file
+	qsub scripts/mafft.sh $project $file
 done

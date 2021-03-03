@@ -43,13 +43,13 @@ How to execute the pipeline:
 
 Run1: 
 
-	batch-pacbio-pipeline-with-blast.sh <path-to-raw-fasta-files-directory> <path-to-config-script>  nogen   
+	scripts/batch-pacbio-pipeline-with-blast.sh <path-to-raw-fasta-files-directory> <path-to-config-script>  nogen   
 
 or
 
 Run2: 
 
-	batch-pacbio-pipeline-with-blast.sh <path-to-raw-fasta-files-directory> <path-to-config-script> config_file
+	scripts/batch-pacbio-pipeline-with-blast.sh <path-to-raw-fasta-files-directory> <path-to-config-script> config_file
  
 
 where `path-to-raw-fasta-files-directory` is the folder where all the fasta files are located. There must be a `/` at the end. The path to the `path-to-raw-fasta-files-directory` folder needs to be an absolute path. `config_file` is the folder where the primers, error, length information are located.
@@ -61,22 +61,22 @@ Note: This only operates on fasta files, so if there are other files/folders in 
 
 Run1:
 
- 	 qsub -pe round 8 pacbio-pipeline-with-blast.sh project file config_file nogen
+ 	 qsub -pe round 8 scripts/pacbio-pipeline-with-blast.sh project file config_file nogen
 
 or
 
 Run2: 
 
- 	 qsub -pe round 8 pacbio-pipeline-with-blast.sh project file config_file  
+ 	 qsub -pe round 8 scripts/pacbio-pipeline-with-blast.sh project file config_file  
 
 
 ### Example
 
-	qsub batch-pacbio-pipeline-with-blast.sh <path-to-raw-fasta-files-directory> <path-to-config-script> nogen
+	qsub scripts/batch-pacbio-pipeline-with-blast.sh <path-to-raw-fasta-files-directory> <path-to-config-script> nogen
 
 or 
 
-	qsub batch-pacbio-pipeline-with-blast.sh <path-to-raw-fasta-files-directory> <path-to-config-script>
+	qsub scripts/batch-pacbio-pipeline-with-blast.sh <path-to-raw-fasta-files-directory> <path-to-config-script>
 
 
 
@@ -108,13 +108,13 @@ How to execute:
 
 Run1: 
 
-	batch-revert_mutations.sh <path-to-bam-files-directory>  True  
+	scripts/batch-revert_mutations.sh <path-to-bam-files-directory>  True  
 
 or
 
 Run2: 
 
-	batch-revert_mutations.sh <path-to-bam-files-directory> 
+	scripts/batch-revert_mutations.sh <path-to-bam-files-directory> 
  
 
 where `path-to-bam-files-directory` is the folder where all the bam/.bai/.vcf files are located. There must be a `/` at the end. 
@@ -126,11 +126,11 @@ If none, it take excel file for variants information in .xlsx format.
 
 ### Example
 
-	qsub batch-revert_mutations.sh <path-to-bam-files-directory> True
+	qsub scripts/batch-revert_mutations.sh <path-to-bam-files-directory> True
 
 or 
 
-	qsub batch-revert_mutations.sh <path-to-bam-files-directory>
+	qsub scripts/batch-revert_mutations.sh <path-to-bam-files-directory>
 
 ## Pipeline components:
 	
