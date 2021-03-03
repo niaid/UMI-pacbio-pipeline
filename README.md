@@ -5,7 +5,7 @@
 This requires a python environment. A conda environment is recommended, and a `requirements.txt` is included listing all required modules.
 
 ### Note 
-you will need to change the loadining of your python environment, inside any scripts
+you will need to change the loadining of your python environment, inside any scripts.
 	   	 
 ### pacbio-pipeline-with-blast.sh
 
