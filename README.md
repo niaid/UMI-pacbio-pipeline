@@ -170,7 +170,7 @@ or
 ## Requirements
 
 ## Citing UMI-pacbio-pipeline
-If you use TreeCluster in your work, please cite:
+If you use UMI-pacbio-pipeline in your work, please cite:
 
 	XXXX
 
