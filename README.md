@@ -1,31 +1,7 @@
 # Pacbio UMI Analysis Pipeline
 
-This pipeline is under construction... 
 
 ## Pipeline components:
-
-### pacbioUMI_pipe.sh
-1. Orients the fasta files with reference to XX.fasta, output generated to `oriented` folder.
-
-2. Trim the forward  and reverse (PCR) primers sequence using cutadapt. This step also does an insert filtering. Inserts shorter than 90% of the length of the desired insert length are trimmed. The output is generated to `trimmed` folder.
-
-3. Script `bin_by_UMI.py` gets called and generates results under the `umi_stats` folder. In this folder `*_umi_seq.txt` gives the list of umi sequences extracted from the data.
-
-4. Script `extract_seq.py` gets called and extracts reads to `sequences` folder based on associated UMI sequence.
-
-5. Script `cluster_bins.sh` gets called to get consensus sequence from each umi bin. The output is generated to `sequences` folder.
-
-6. Script `read_uc_file.py` gets called to get a fasta file with consensus sequence with highest read abundance from each UMI bin. The output is generated in `sequences/cluster_with_read_counts` folder.  It then removes insert error or potential UMI collision. The output of error reads is saved in `umi_collision` folder. 
-
-7. Script `umi_cluster_reads.py` gets called to extract and save possible UMI collision in `umi_collision` folder. 
-
-8. CCS reads obtained from step 1 to 7 are saved in `final_ccs_reads` folder.
-
-9. Script `check_umi_counts.sh` to check if the number of unique UMIs in final output match the number of UMIs in final reads + umi_collision + insert_error. If there is a mismatch it save the result as .txt file in `project` folder else if prints nothing. 
-
-10. Script `remove_fake_umis_nogen.sh` gets called to remove potential fake UMIs based on network adjacency excluding genetic distance criteria in network and inflection/knee point criteria. Fake UMIs information is saved in `fake-umi-curation-nogen` folder. Final output after removing fake UMIs is saved in `final_post_curation/nogen` folder. 
-
-11. Script `remove_fake_umis.sh` gets called to remove potential fake UMIs based on network adjacency including genetic distance criteria and inflection/knee point criteria. Fake UMIs information is saved in `fake-umi-curation` folder. Final output after removing fake UMIs is saved in `final_post_curation/gen` folder. The unaligned final fasta files are save in `final_unaligned_post_cur` folder. 
 	
 ## bin_by_UMI.py
 This script has 5 functions: [1] Reads the trimmed files and looks for 8 base primerID sequence after RT primer. Each primerID (UMI) is written to a csv file with associated ID and sequence. It also has functions that generates umi stats and writes umi sequences to a file that have more than three reads. [2] Reads the UMI file generated in [1] and associates count column for each occurance of the UMI sequence. [3] Reads the UMI file and writes to a fasta format file: >seqID \n sequence. [4] Reads the fasta file generated in [3].  and outputs a file with list of UMIs. [5]. Reads the count UMI file and discard UMIs <= inflection point.
@@ -60,7 +36,14 @@ This script uses three functions:
 	    The choice of inflection/knee point is deterimed by True (use inflection point) and without (True) knee point.
 	** `down_select_post_cure.py`: this script calls final_ccs_reads prior to fake UMI curation and extract the headers
 	    and match with the headers in `final_post_curation/gen` files and select matches headers and saved unaligned 	     final output in `final_unaligned_post_cur` folder.  
+	    
+## blast_nr.sh
+This script uses each fasta file from `Tobe_blasted` folder and blast it against local blast db. The output is printed to a file with .out format for each fasta file. This file contains information about each sequence and what it is blasted to. The output is saved in `Tobe_blasted/Blast` folder. Following this step, for each .out file, the `grep` tool is called to extract the sequences' headers that contains "coronavirus (in case of CoV2)" for each fasta file and save these headers as a .txt file in `Tobe_blasted/cov_headers` folder. 
 
+## down_select_seqs.py
+This script uses header files from `Tobe_blasted/cov_headers` folder to subset sequences and write them as a fasta file in 
+`file_ccs_reads` folder. 
+	   	 
 ## Usage
 
 How to execute the pipeline:
@@ -101,7 +84,20 @@ or
 
 ### pacbio-pipeline-with-blast.sh
 
-Step 1,...,7, same as above.
+
+1. Orients the fasta files with reference to XX.fasta, output generated to `oriented` folder.
+
+2. Trim the forward  and reverse (PCR) primers sequence using cutadapt. This step also does an insert filtering. Inserts shorter than 90% of the length of the desired insert length are trimmed. The output is generated to `trimmed` folder.
+
+3. Script `bin_by_UMI.py` gets called and generates results under the `umi_stats` folder. In this folder `*_umi_seq.txt` gives the list of umi sequences extracted from the data.
+
+4. Script `extract_seq.py` gets called and extracts reads to `sequences` folder based on associated UMI sequence.
+
+5. Script `cluster_bins.sh` gets called to get consensus sequence from each umi bin. The output is generated to `sequences` folder.
+
+6. Script `read_uc_file.py` gets called to get a fasta file with consensus sequence with highest read abundance from each UMI bin. The output is generated in `sequences/cluster_with_read_counts` folder.  It then removes insert error or potential UMI collision. The output of error reads is saved in `umi_collision` folder. 
+
+7. Script `umi_cluster_reads.py` gets called to extract and save possible UMI collision in `umi_collision` folder. 
 
 8. CCS reads obtained from step 1 to 7 are saved in `Tobe_blasted` folder for blasting against reference.
 
@@ -111,12 +107,6 @@ Step 1,...,7, same as above.
 
 11. Step 10 and 11 of the above is executed.
 
-## blast_nr.sh
-This script uses each fasta file from `Tobe_blasted` folder and blast it against local blast db. The output is printed to a file with .out format for each fasta file. This file contains information about each sequence and what it is blasted to. The output is saved in `Tobe_blasted/Blast` folder. Following this step, for each .out file, the `grep` tool is called to extract the sequences' headers that contains "coronavirus (in case of CoV2)" for each fasta file and save these headers as a .txt file in `Tobe_blasted/cov_headers` folder. 
-
-## down_select_seqs.py
-This script uses header files from `Tobe_blasted/cov_headers` folder to subset sequences and write them as a fasta file in 
-`file_ccs_reads` folder. 
 
 
 ## Usage
