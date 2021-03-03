@@ -83,7 +83,7 @@ cutadapt -e $error -g $forward -g $forwardPrimer_RC $orientedFile | cutadapt -e 
 
  # Note the path of the python pacbio-pipeline. This shell command is expected to be run in the directory of the shell script.
 
- python "bin_by_UMI.py" $RTprimer_RC $project $file
+ python "scripts/bin_by_UMI.py" $RTprimer_RC $project $file
 
  # This will make the folders required for the next phase. We separate this from the python script for parallel execution
  mkdir -p $project"sequences/"$file
@@ -93,14 +93,14 @@ cutadapt -e $error -g $forward -g $forwardPrimer_RC $orientedFile | cutadapt -e 
  mkdir -p $project"sequences/"$file"/cluster_usearch"
 
  # This extracts umi reads into their own files executed in parallel
- xargs -l -P 8 python "extract_seq.py" $project $file< $project"umi_stats/"$file"_umi_seq.txt"
- xargs -l -P 8 bash "cluster_bins.sh" $RTprimer_RC $project $file< $project"umi_stats/"$file"_umi_seq.txt"
- xargs -l python "read_uc_file.py" $project $file< $project"umi_stats/"$file"_umi_seq.txt"
+ xargs -l -P 8 python "scripts/extract_seq.py" $project $file< $project"umi_stats/"$file"_umi_seq.txt"
+ xargs -l -P 8 bash "scripts/cluster_bins.sh" $RTprimer_RC $project $file< $project"umi_stats/"$file"_umi_seq.txt"
+ xargs -l python "scripts/read_uc_file.py" $project $file< $project"umi_stats/"$file"_umi_seq.txt"
  # next steps move reads into individual clusters for umis that could have collision
  # Does nothing for umis without collision
  cut -d "," -f 1 $project"umi_collision/"$file"collision.txt" > $project"umi_collision_all.tmp"
  if [ -s $project"umi_collision_all.tmp" ]
- then xargs -l python "umi_cluster_reads.py" $project $file< $project"umi_collision_all.tmp"
+ then xargs -l python "scripts/umi_cluster_reads.py" $project $file< $project"umi_collision_all.tmp"
  fi
  # Cleans up useless files
  rm $project"umi_collision_all.tmp"
@@ -112,11 +112,11 @@ cutadapt -e $error -g $forward -g $forwardPrimer_RC $orientedFile | cutadapt -e 
  cp $project"sequences/"$file"/cluster_with_read_counts/"$file"read.fasta" $tobe_blasted"/"$file"read.fasta"
 
 
- bash "blast_nr.sh" $project"Tobe_blasted/" $file"read"
+ bash "scripts/blast_nr.sh" $project"Tobe_blasted/" $file"read"
  
  mkdir -p $project"Tobe_blasted/cov_headers"
  grep -i "coronavirus" $project"Tobe_blasted/Blast/"$file"read_out.out" | cut -f 1 | sort |uniq > $project"Tobe_blasted/cov_headers/"$file"_cov_headers.txt"
- python "down_select_seqs.py" $project"Tobe_blasted/"$file"read.fasta" $project"Tobe_blasted/cov_headers/"$file"_cov_headers.txt" $project"final_ccs_reads/"$file"read.fasta"  
+ python "scripts/down_select_seqs.py" $project"Tobe_blasted/"$file"read.fasta" $project"Tobe_blasted/cov_headers/"$file"_cov_headers.txt" $project"final_ccs_reads/"$file"read.fasta"  
 
  # Does fake umi removal
  uniq_umis=$(wc -l < $project"umi_stats/"$file"_umi_seq.txt")
@@ -133,10 +133,10 @@ cutadapt -e $error -g $forward -g $forwardPrimer_RC $orientedFile | cutadapt -e 
 
  if [[ "$gen_dist" == "nogen" ]]
  then
- 	qsub -pe round $num_cores "remove_fake_umis_nogen.sh" $project $file $num_cores
+ 	qsub -pe round $num_cores "scripts/remove_fake_umis_nogen.sh" $project $file $num_cores
  else
  	#Do align and gen dist stuff
- 	bash "mafft.sh" $project"final_ccs_reads/" $file"read"
- 	qsub -pe round "$num_cores" "remove_fake_umis.sh" "$project" "$file" "$num_cores" 
+ 	bash "scripts/mafft.sh" $project"final_ccs_reads/" $file"read"
+ 	qsub -pe round "$num_cores" "scripts/remove_fake_umis.sh" "$project" "$file" "$num_cores" 
  fi
  

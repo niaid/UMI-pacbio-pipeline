@@ -15,4 +15,4 @@ error=0.30
 minLength=2800
 maxLength=5000
 
-referenceFile="/hpcdata/vrc_vpds/data/pacbio/pacbio-pipeline/reference-files/CoV_Reference_S_protein.fa"
+referenceFile="reference-files/CoV_Reference_S_protein.fa"

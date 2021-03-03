@@ -36,6 +36,6 @@ module unload python
 module load Anaconda3/2020.07
 source activate umi-error
 mkdir -p $project"fake-umi-curation-nogen"
-python "umi_dedup_nogen.py" $project $file $n_cores
-python "inflection_removal.py" $project $file "fake-umi-curation-nogen" $infl_yes
+python "scripts/umi_dedup_nogen.py" $project $file $n_cores
+python "scripts/inflection_removal.py" $project $file "fake-umi-curation-nogen" $infl_yes
 cp $project"fake-umi-curation-nogen/"$file"/"$file"_final.fasta" $out_after_cur

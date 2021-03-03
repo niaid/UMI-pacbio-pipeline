@@ -10,7 +10,7 @@
 #$ -j y
 
 #$ -S /bin/bash
-cd "" # for some reason the UGE is getting put in a random folder.
+cd "scripts/" # for some reason the UGE is getting put in a random folder.
 # only when running through the whole pipeline. This fixes it but no idea why it happens.
 
 # Send the output of the script to a directory called 'UGE-output' uder current working directory (cwd)
@@ -41,7 +41,7 @@ module unload python
 module load Anaconda3/2020.07
 source activate umi-error
 mkdir -p $project"fake-umi-curation"
-python "umi_dedup.py" $project $file $n_cores
-python "inflection_removal.py" $project $file "fake-umi-curation" $infl_yes
+python "scripts/umi_dedup.py" $project $file $n_cores
+python "scripts/inflection_removal.py" $project $file "fake-umi-curation" $infl_yes
 cp $project"fake-umi-curation/"$file"/"$file"_final.fasta" $out_after_cur
-python "down_select_post_cur.py" $project"final_ccs_reads/"$file"read.fasta" $out_after_cur$file"_final.fasta" $out_dir$file"_unaligned_post_cur.fasta"
+python "scripts/down_select_post_cur.py" $project"final_ccs_reads/"$file"read.fasta" $out_after_cur$file"_final.fasta" $out_dir$file"_unaligned_post_cur.fasta"

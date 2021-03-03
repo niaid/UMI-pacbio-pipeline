@@ -47,7 +47,7 @@ then
 	    in_bam=$(ls $INPUT_FOLDER | grep $file_in | grep "bam" | grep -v "bai")
 		VCF_FILE=$(ls $INPUT_FOLDER | grep $file_in | grep ".vcf")
 
-		python "revert_mutations_bam.py" "$INPUT_FOLDER$in_bam" "$INPUT_FOLDER$VCF_FILE" $VCF_FLAG > $OUTPUT$file_in"_reverted.bam" 2> $OUTPUT$file_in"deleted_inserts.txt"
+		python "scripts/revert_mutations_bam.py" "$INPUT_FOLDER$in_bam" "$INPUT_FOLDER$VCF_FILE" $VCF_FLAG > $OUTPUT$file_in"_reverted.bam" 2> $OUTPUT$file_in"deleted_inserts.txt"
 
 		samtools index $OUTPUT$file_in"_reverted.bam"
 		samtools fasta $OUTPUT$file_in"_reverted.bam" > $OUTPUT$file_in"_reverted.fasta"
@@ -60,7 +60,7 @@ else
 	do
 		in_bam=$(ls $INPUT_FOLDER | grep $file_in | grep "bam" | grep -v "bai")
 		
-		python "revert_mutations_bam.py" "$INPUT_FOLDER$in_bam" $OUTPUT"variant_dict.pickle" > $OUTPUT$file_in"_reverted.bam" 2> $OUTPUT$file_in"deleted_inserts.txt"
+		python "scripts/revert_mutations_bam.py" "$INPUT_FOLDER$in_bam" $OUTPUT"variant_dict.pickle" > $OUTPUT$file_in"_reverted.bam" 2> $OUTPUT$file_in"deleted_inserts.txt"
 
 		samtools index $OUTPUT$file_in"_reverted.bam"
 		samtools fasta $OUTPUT$file_in"_reverted.bam" > $OUTPUT$file_in"_reverted.fasta"

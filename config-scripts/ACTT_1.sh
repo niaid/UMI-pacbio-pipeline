@@ -16,4 +16,4 @@ error=0.30
 minLength=4500
 maxLength=6500
 
-referenceFile="/hpcdata/vrc_vpds/data/pacbio/pacbio-pipeline/reference-files/CoV_Reference_SEM_protein.fa"
+referenceFile="reference-files/CoV_Reference_SEM_protein.fa"
