@@ -82,7 +82,7 @@ or
 
 # Revert Mutations(errors) to Consensus Pipeline:
 
-This pipeline, conserve the positions of real variants detected from variant caller and revert the rest of the bases back to consensus. This is now a pypi package see [rev-seqs](https://pypi.org/project/rev-seqs/)
+This pipeline, conserve the positions of real variants detected from variant caller and revert the rest of the bases back to consensus. {::This is now a pypi package see [rev-seqs](https://pypi.org/project/rev-seqs/)}
 
 ## Component:
 
