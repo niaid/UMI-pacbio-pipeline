@@ -167,4 +167,11 @@ or
 	qsub batch-revert_mutations.sh <path-to-bam-files-directory>
 
 
+## Requirements
+
+## Citing UMI-pacbio-pipeline
+If you use TreeCluster in your work, please cite:
+
+	XXXX
+
 
