@@ -91,13 +91,13 @@ Note: This only operates on fasta files, so if there are other files/folders in 
 
 Run1:
 
- `qsub -pe round 8 pacbio-pipeline-with-blast.sh project file config_file nogen`
+ 	** `qsub -pe round 8 pacbio-pipeline-with-blast.sh project file config_file nogen`
 
 or
 
 Run2: 
 
- `qsub -pe round 8 pacbio-pipeline-with-blast.sh project file config_file`  
+ 	** `qsub -pe round 8 pacbio-pipeline-with-blast.sh project file config_file`  
 
 
 ## Example
