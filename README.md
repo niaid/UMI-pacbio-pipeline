@@ -23,13 +23,10 @@ This script checks if the number of unique UMIs in final output matches the numb
 
 ## remove_fake_umis_nogen.sh (network-based filtering)
 This script uses two functions: 
-
-	** `umi_dedup_nogen.py`: this script locates and sets aside fake UMIs wihout considering genetic distance, it only looks at pairs with edit distance 1 		    and a_n>2b_n-1 criteria. The output is fake UMIs that are saved in `fake-umi-curation-nogen` folder.
-	
-	** `inflection_removal.py`: this script removes low count UMIs based on counts below inflection point or knee point.
-				    The choice of inflection/knee point is deterimed by True (use inflection point) and 				     without (True) knee point.
-
-The final aligned output of this script is save in `final_post_curation/gen` folder.
+	1.  `umi_dedup_nogen.py`: this script locates and sets aside fake UMIs wihout considering genetic distance, it only looks at pairs with edit        		distance 1 and a_n>2b_n-1 criteria. The output is fake UMIs that are saved in `fake-umi-curation-nogen` folder.
+	2. `inflection_removal.py`: this script removes low count UMIs based on counts below inflection point or knee point.
+		The choice of inflection/knee point is deterimed by True (use inflection point) and without (True) knee point.
+		The final aligned output of this script is save in `final_post_curation/gen` folder.
 
 ## remove_fake_umis.sh
 This script uses three functions:
