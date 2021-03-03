@@ -9,7 +9,7 @@ you will need to change the loadining of your python environment, inside any scr
 	   	 
 ### pacbio-pipeline-with-blast.sh
 
-1. Orients the fasta files with reference to XX.fasta, output generated to `oriented` folder.
+1. Orients the fasta files with reference to `*.fasta`, output generated to `oriented` folder.
 
 2. Trim the forward  and reverse (PCR) primers sequence using cutadapt. This step also does an insert filtering. Inserts shorter than 90% of the length of the desired insert length are trimmed. The output is generated to `trimmed` folder.
 
