@@ -4,10 +4,10 @@
 ## Pipeline components:
 	
 ## bin_by_UMI.py
-This script has functions that read the trimmed files and looks for 8 base primerID sequence after RT primer. Each primerID (UMI) with associated ID and sequence is written to a `*.csv` file. UMIs and their frequency of occurances are written to a \*.txt UMI sequences with read counts > inflection point in UMI count distribution are preserved and formatted file as : >seqID_UMI \n sequence is written as \*.fasta file. 
+This script has functions that read the trimmed files and looks for 8 base primerID sequence after RT primer. Each primerID (UMI) with associated ID and sequence is written to a ``*.csv`` file. UMIs and their frequency of occurances are written to a \*.txt UMI sequences with read counts > inflection point in UMI count distribution are preserved and formatted file as : >seqID_UMI \n sequence is written as \*.fasta file. 
 
 ## extract_seq.py
-This script extracts reads to `sequences` folder based on associated UMI sequence. It collects all the sequences with the same UMI and place them in one fasta file formated as `UMI_seq.fasta`
+This script extracts reads to `sequences` folder based on associated UMI sequence. It collects all the sequences with the same UMI and place them in one fasta file formated as UMI_seq.fasta
 
 ## cluster_bins.sh
 This script first uses cutadapt to trim the RT primer and the 8 base umi sequence and then uses usearch -cluster_fast to generate consensus sequence based on 99% identity. This script generates a `trimmed` folder that has trimmed inserts left after removal of RT primer and 8 base UMI sequence. It also generates `centrioid_usearch` folder that has centroid sequences from usearch, `cluster_usearch` folder that has the `*.uc` files generated from running usearch. These `*.uc` files are used to get the read abundance for each umi sequence.
