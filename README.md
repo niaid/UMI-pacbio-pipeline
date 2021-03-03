@@ -4,7 +4,7 @@
 ## Pipeline components:
 	
 ## bin_by_UMI.py
-This script has 5 functions: [1] Reads the trimmed files and looks for 8 base primerID sequence after RT primer. Each primerID (UMI) is written to a csv file with associated ID and sequence. It also has functions that generates umi statistics. [2] Reads the UMI file generated in [1] and associates count column for each occurance of the UMI sequence. [3] Reads the UMI file and writes to a fasta format file: >seqID \n sequence. [4] Reads the fasta file generated in [3]. Outputs a file with list of UMIs. [5]. Reads the count UMI file and discard UMIs <= inflection point.
+This script has functions that read the trimmed files and looks for 8 base primerID sequence after RT primer. Each primerID (UMI) with associated ID and sequence is written to a `*.csv` file. UMIs and their frequency of occurances are written to a `*.txt` file and reads the count UMI file and discard UMIs <= inflection point. Formatted file as : >seqID_UMI \n sequence is written as `*.fasta` file. 
 
 ## extract_seq.py
 Program extracts reads to `sequences` folder based on associated UMI sequence. It collects al the sequences with the same UMI and place them in one fasta file.
