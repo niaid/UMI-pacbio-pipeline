@@ -153,15 +153,11 @@ This script gets called to extract and save possible insert error in `error_inse
 This script checks if the number of unique UMIs in final output matches the number of UMIs in final reads + insert_error. If there is a mismatch it save the result as `*.txt` file in `project` folder, else it prints nothing.  
 
 ## remove_fake_umis_nogen.sh (network-based filtering)
-This script uses two functions:  `umi_dedup_nogen.py`: this script locates and sets aside fake UMIs wihout considering genetic distance, it only looks at pairs with edit distance 1 and a_n>2b_n-1 criteria. The output is fake UMIs that are saved in `fake-umi-curation-nogen` folder.
- `inflection_removal.py`: this script removes low count UMIs based on counts below inflection point or knee point. The choice of inflection/knee point is deterimed by True (use inflection point) and without (True) knee point. The final aligned output of this script is save in  `final_post_curation/gen` folder.
-
-## remove_fake_umis.sh
-This script uses three functions: `umi_dedup.py`: this script locates and set aside fake UMIs considering genetic distance 0, edit distance 1, and a_n>2n_b-1 criteria.The output is fake UMIs that are saved in `fake-umi-curation` folder. `inflection_removal.py`: this script removes low count UMIs based on counts below inflection point or knee point. The choice of inflection/knee point is deterimed by True (use inflection point) and without (True) knee point. `down_select_post_cure.py`: this script calls final_ccs_reads prior to fake UMI curation and extract the headers and match with the headers in `final_post_curation/gen` files and select matched headers and saved unaligned final output in `final_unaligned_post_cur` folder.  
-	    
-## remove_fake_umis_nogen.sh
 This script uses two functions: `umi_dedup_nogen.py`: this script locates and set aside fake UMIs considering edit distance 1, and a_n>2n_b-1 criteria. The output is fake UMIs that are saved in `fake-umi-curation-nogen` folder.`inflection_removal.py`: this script removes low count UMIs based on counts below inflection point or knee point. The choice of inflection/knee point is deterimed by True (use inflection point) and without (True) knee point. Final output is saved in  `final_post_curation/nongen` folder in `*.fasta` formatted files.
-	    
+
+## remove_fake_umis.sh (network-based filtering)
+This script uses three functions: `umi_dedup.py`: this script locates and set aside fake UMIs considering genetic distance 0, edit distance 1, and a_n>2n_b-1 criteria.The output is fake UMIs that are saved in `fake-umi-curation` folder. `inflection_removal.py`: this script removes low count UMIs based on counts below inflection point or knee point. The choice of inflection/knee point is deterimed by True (use inflection point) and without (True) knee point. `down_select_post_cure.py`: this script calls final_ccs_reads prior to fake UMI curation and extract the headers and match with the headers in `final_post_curation/gen` files and select matched headers and saved unaligned final output in `final_unaligned_post_cur` folder.  
+	    	    
 ## blast_nr.sh
 This script uses each fasta file from `Tobe_blasted` folder and blast it against local blast db. The output is printed to a file with .out format for each fasta file. This file contains information about each sequence and what it is blasted to. The output is saved in `Tobe_blasted/Blast` folder. Following this step, for each .out file, the `grep` tool is called to extract the sequences' headers that contains "coronavirus (in case of CoV2)" for each fasta file and save these headers as a `*.txt` file in `Tobe_blasted/cov_headers` folder. 
 
