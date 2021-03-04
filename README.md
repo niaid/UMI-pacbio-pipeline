@@ -168,6 +168,6 @@ This script uses header files from `Tobe_blasted/cov_headers` folder to subset s
 ## Citing UMI-pacbio-pipeline
 If you use UMI-pacbio-pipeline in your work, please cite:
 
-	XXXX
+	XXXXX
 
 
