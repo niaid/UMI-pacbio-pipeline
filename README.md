@@ -1,11 +1,12 @@
 # Pacbio UMI Analysis Pipeline
+This pipeline was developed in Virus Persistence and Dynamics Section (VPDS) of the Immunology Laboratory (IL) in the Vaccine Research Center (VRC) at the National Institutes of Health (NIH).
 
 ## Requirements
 
-This requires a python environment. A conda environment is recommended, and a `requirements.txt` is included listing all required modules.
+This pipeline requires a python environment. A conda environment is recommended, and a requirements.txt is included listing all required modules.
 
 ### Note 
-you will need to change the loadining of your python environment, inside any scripts.
+You will need to change the loading of your python environment, inside any scripts.
 	   	 
 ### pacbio-pipeline-with-blast.sh
 
@@ -82,15 +83,15 @@ or
 
 # Revert Mutations by Erroneous to Consensus Pipeline:
 
-This pipeline, conserve the positions of real variants detected from variant caller and revert the rest of the bases back to consensus. <!---This is now a pypi package see [rev-seqs](https://pypi.org/project/rev-seqs/)-->
+This pipeline, conserves the positions of real variants detected from variant caller and revert the rest of the bases back to consensus. <!---This is now a pypi package see [rev-seqs](https://pypi.org/project/rev-seqs/)-->
 
-## Component:
+## Components:
 
 ### make_variant_dict.py
 
 This script reads variant excel file (obtained from variant caller) and turns this into a dictionary and save this dictionary in pickle format to be read later. The output contains all the real variants.
 
-### rever_mutations_bam.py
+### revert_mutations_bam.py
 
 This script reads either pickle dictionary or .vcf file and bam/bai file and returns bam file where each file was reconstructed by conserving real variants and revert the rest of the bases to consensus. 
 
@@ -168,6 +169,6 @@ This script uses header files from `Tobe_blasted/cov_headers` folder to subset s
 ## Citing UMI-pacbio-pipeline
 If you use UMI-pacbio-pipeline in your work, please cite:
 
-	XXXXX
+	[Ko SH, Bayat Mokhtari E, Mudvari P, Stein S, Stringham CD, et al. (2021) High-throughput, single-copy sequencing reveals SARS-CoV-2 spike variants coincident with mounting humoral immunity during acute COVID-19. PLOS Pathogens 17(4): e1009431.](https://doi.org/10.1371/journal.ppat.1009431)
 
 
