@@ -169,6 +169,6 @@ This script uses header files from `Tobe_blasted/cov_headers` folder to subset s
 ## Citing UMI-pacbio-pipeline
 If you use UMI-pacbio-pipeline in your work, please cite:
 
-	[Ko SH, Bayat Mokhtari E, Mudvari P, Stein S, Stringham CD, et al. (2021) High-throughput, single-copy sequencing reveals SARS-CoV-2 spike variants coincident with mounting humoral immunity during acute COVID-19. PLOS Pathogens 17(4): e1009431.](https://doi.org/10.1371/journal.ppat.1009431)
+[Ko SH, Bayat Mokhtari E, Mudvari P, Stein S, Stringham CD, et al. (2021) High-throughput, single-copy sequencing reveals SARS-CoV-2 spike variants coincident with mounting humoral immunity during acute COVID-19. PLOS Pathogens 17(4): e1009431.](https://doi.org/10.1371/journal.ppat.1009431)
 
 
