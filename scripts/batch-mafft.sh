@@ -28,9 +28,9 @@
 
 
 # to run execute the command 
-# navigate to the folder contraining the batch-mafft then run the following command
+# navigate to the folder containing the batch-mafft then run the following command
 # qsub batch_mafft.sh project 
-# project: path to a directorty  with fasta files in it. There must be a / at the end.
+# project: path to a directory  with fasta files in it. There must be a / at the end.
 
 
 project=$1

@@ -41,8 +41,7 @@ def getPrimerId(trimmed_FP_RP_file, primerId_file, RT_primer_RC):
                 name = line.strip()
             else:
                 value = line
-                detected_RTPrimer_RC = value[len(value)-(len(RT_primer_RC) \
-                                                 + 9):len(value)-9]
+                detected_RTPrimer_RC = value[len(value)-(len(RT_primer_RC) + 9):len(value)-9]
                 if RT_primer_RC == detected_RTPrimer_RC:
                     UMI = value[len(value)- 9 :len(value)]
                     myTup = (UMI.strip(), value.strip())

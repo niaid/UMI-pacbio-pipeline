@@ -12,7 +12,7 @@ from umi_dedup import strip_umi
 
 def find_kneeinf_cutoff(umi_counts):
     """
-    returns the cutfoff value coresponding to the inflection point
+    returns the cutoff value corresponding to the inflection point
 
     Parameters:
 
@@ -42,7 +42,7 @@ def find_kneeinf_cutoff(umi_counts):
     log_rank = np.log10(run_rank)
     log_counts = np.log10(umi_totals)
     d1n = np.diff(log_counts)/np.diff(log_rank)
-    # We used the estimated derivated to calculate the inflection point
+    # We used the estimated derivative to calculate the inflection point
     # Then count the count corresponding to the location of the inflection point
     right_edge = np.argmin(d1n)
     # Takes inflection point
@@ -74,7 +74,7 @@ def prep_headers(fasta_file, infl_yes):
         list of sequences in fasta file. each sequence is in Bio format
 
     infl_yes: boolean
-    	Boolean variable to us inflection point instead of knee
+        Boolean variable to us inflection point instead of knee
     Returns
     -------
     header_dict: dict
@@ -88,22 +88,22 @@ def prep_headers(fasta_file, infl_yes):
 
     infl, knee, knee_fail = find_kneeinf_cutoff(umi_counts)
     for item in headers:
-    	if infl_yes:
-	        if int(item[2]) < infl:
-	            header_dict[item[0]] = False
-	        else:
-	            header_dict[item[0]] = True
-    	else:
-	        if int(item[2]) < knee:
-	            header_dict[item[0]] = False
-	        else:
-	            header_dict[item[0]] = True
+        if infl_yes:
+            if int(item[2]) < infl:
+                header_dict[item[0]] = False
+            else:
+                header_dict[item[0]] = True
+        else:
+            if int(item[2]) < knee:
+                header_dict[item[0]] = False
+            else:
+                header_dict[item[0]] = True
 
     return header_dict, infl, knee, knee_fail
 
 def main(project, file_path, umi_out_folder, infl_yes):
     """
-    See module docsting
+    See module docstring
 
     Parameters
     ----------
@@ -149,5 +149,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 4 and sys.argv[4] == 'True':
         INFL = True
     else:
-    	INFL = False
+        INFL = False
     main(PROJECT, FILE_PATH, UMI_OUT_FOLDER, INFL)

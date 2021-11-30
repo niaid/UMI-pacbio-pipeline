@@ -1,11 +1,9 @@
-
 #!/bin/sh
 
-# This script count the number of unique UMIs for each cell and make a csv file.
+# This script counts the number of unique UMIs for each cell and make a csv file.
 # to run execute the command 
-# navigate to the folder contraining the *_umi_seq
-# project: path to a directorty with .txt file . There must be a / at the end.
-# project: ~/hpcdata/vrc_vpds/data/pacbio/!!!/!!!/umi_stats/
+# navigate to the folder containing the *_umi_seq
+# project: path to a directory with .txt file. There must be a / at the end.
 
 
 project=$1

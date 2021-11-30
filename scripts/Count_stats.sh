@@ -4,7 +4,6 @@
 # to run execute the command 
 # navigate to the folder contraining  final_ccs_reads, umi_collision, and error_insert, and umi_stats folders
 # project: path to a directorty contraining  final_ccs_reads, umi_collision, and error_insert folders
-#project: ~/hpcdata/vrc_vpds/data/pacbio/!!!/
 
 
 project=$1

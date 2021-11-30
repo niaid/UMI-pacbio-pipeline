@@ -135,7 +135,7 @@ cutadapt -e $error -g $forward -g $forwardPrimer_RC $orientedFile | cutadapt -e 
  then
  	qsub -pe round $num_cores "scripts/remove_fake_umis_nogen.sh" $project $file $num_cores
  else
- 	#Do align and gen dist stuff
+ 	# Do alignment
  	bash "scripts/mafft.sh" $project"final_ccs_reads/" $file"read"
  	qsub -pe round "$num_cores" "scripts/remove_fake_umis.sh" "$project" "$file" "$num_cores" 
  fi

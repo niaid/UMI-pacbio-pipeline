@@ -1,1 +1,4 @@
 ._*
+.DS_store*
+*.idea*
+*__pycache__*

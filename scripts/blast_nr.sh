@@ -39,6 +39,7 @@ module load "BLAST+"
 
 project=$1
 file=$2
+db=$3
 inputfile=$project$file".fasta"
 outputfile=$project"Blast/"$file"_out.out"
 
@@ -46,7 +47,6 @@ mkdir -p $project"Blast"
 
 echo $inputfile
 
-#blastn -db nt -query $inputfile -outfmt "6 stitle std qlen" -max_target_seqs 5 -out results.out -remote   
-#blastn -db nt -query $inputfile -outfmt "6 qseqid evalue bitscore stitle" -out $outputfile -remote   
-#blastn -db nt -query $inputfile -outfmt "7 qseqid evalue bitscore stitle" -max_target_seqs 1 -max_hsps 1 -out $outputfile -remote   
-blastn -query $inputfile -db "/hpcdata/bio_data/blast_db_29SEP2020/nt" -num_threads 8 -outfmt "7 qseqid evalue bitscore stitle" -out $outputfile
+# If you are querying a local db, point to the file inside the folder e.g.
+# -db "/absolute/path/to/file.fa"
+blastn -query $inputfile -db $db -num_threads 8 -outfmt "7 qseqid evalue bitscore stitle" -out $outputfile

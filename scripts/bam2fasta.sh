@@ -33,13 +33,11 @@
 FILE_PATH=$1
 OUTPUT=$2
 
-
-#/hpcdata/vrc/vrc1_data/smrtlink/jobs_root/cromwell-executions/pb_demux_ccs/7bbb9b83-00f9-4a7b-b68a-107da23b0396/call-demultiplex_barcodes/demultiplex_barcodes/6cd4cff9-10d7-4d69-8e54-0630d7592b88/call-lima/execution/
 mkdir -p $OUTPUT
 
 ls $FILE_PATH*.bam | rev | cut -d "." -f2- | cut -d "/" -f 1 | rev | while read -r file_in;
 do
-	/nethome/smrtanalysis2/smrtlink/smrtcmds/bin/bam2fasta -o $OUTPUT$file_in  $FILE_PATH$file_in.bam
+	bam2fasta -o $OUTPUT$file_in  $FILE_PATH$file_in.bam
 done 
 
 echo "Done!"
@@ -47,5 +45,4 @@ echo "Done!"
 find $OUTPUT -size 0 -delete
 rm $OUTPUT*remove*
 
-#cat lima.lbc10--lbc10.consensusreadset.xml | grep -o -P  '(?<=ResourceId=").*(?=lima.lbc)' | uniq
 
