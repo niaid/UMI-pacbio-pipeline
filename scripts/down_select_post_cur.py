@@ -10,7 +10,7 @@ def main(final_reads_path, post_curation_path, output_file):
 	"""
 	see module doc string
 
-	Paramters:
+	Parameters:
 	Fill in later
 	"""
 

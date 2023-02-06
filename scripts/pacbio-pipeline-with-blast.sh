@@ -1,142 +1,237 @@
-#!/bin/sh
-
-# Job Name
-#$ -N pacbio_pipeline-with-blast
-
-# Execute the script from the current working directory
-#$ -cwd
-
-# Merge the output of the script, and any error messages generated to one file
-#$ -j y
-
-#$ -S /bin/bash
-
-# Send the output of the script to a directory called 'UGE-output' uder current working directory (cwd)
-  if [ ! -d "UGE-output" ]; then #Create output directory in case it does NOT exist
-      mkdir UGE-output
-  fi
-#$ -o UGE-output/
-
-# Tell the job your memory requirements
-#$ -l h_vmem=2G
-
-# execute this script from the directory containing it.
-
-# Run1: qsub -pe round 8 pacbio-pipeline-with-blast.sh project file config_file nogen  
-#or
-# Run2: qsub -pe round 8 pacbio-pipeline-with-blast.sh project file config_file   
-
-# Parameters
-# project: path to the folder containing the data file. Must end in a /. This must be absolute.
-# file: This is the name of the fasta file to be processed. It should not contain the extension. It should also be inside the project folder
-# config_file: This is the config script that loads all the variables. Must be an absolute path
-
-module unload all
+#!/bin/bash
 
 project=$1
-file=$2
+sample=$2
 config_file=$3
-gen_dist=$4
-inputFile=$project$file".fasta"
-oriented_outFile=$project"oriented"
-output_dir=$project"final_ccs_reads"
-tobe_blasted=$project"Tobe_blasted"
 
-# Loads config file with all the variables
+input_file=$project$sample".fasta"
+output_dir=$project"sgs/"
+
+# -------------------------
+# ----- Preliminaries -----
+# -------------------------
+
+# Recover script directory to ensure paths are resolved
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+export PATH=$SCRIPT_DIR:$PATH
+export PYTHONPATH=$SCRIPT_DIR:$PYTHONPATH
+# Get specific version of pipeline currently being run, included git commit tag
+version="$( get_version.py )-$( cd $SCRIPT_DIR &> /dev/null && git rev-parse --short HEAD )"
+
+# Initialize QC log file
+mkdir -p $project/qc
+QCLOG=$project/qc/$sample-qc.txt
+echo $(date) "umipbp version: " $version > $QCLOG
+echo $(date) "PATH =" $PATH >> $QCLOG
+
+# Load configuration details for sample
 source $config_file
+export PYTHONDONTWRITEBYTECODE=1
 
+# Determine number of threads to use: if JOBS defined in config file, use JOBS number of threads. Otherwise,
+# use as many as hardware allows, up to 16 maximum threads
+nthreads=$(getconf _NPROCESSORS_ONLN)
+echo $(date) "Number of available threads:" $nthreads >> $QCLOG
+if [ -z ${JOBS+x} ]
+then
+  # If JOBS is not specified:
+  njobs=$((nthreads < 16 ? nthreads : 16)) # Use up to 16 threads, if available
+  echo $(date) "Maximum number of jobs to use:" $njobs >> $QCLOG
+else
+  # If JOBS -is- specified:
+  njobs=$JOBS # Use manually-set number of threads
+  echo $(date) "Maximum number of jobs to use:" $njobs >> $QCLOG
+
+fi
+
+echo $(date) "Starting to analyze sample:" $input_file >> $QCLOG
+echo $(date) "Number of CCS reads:" $(grep -c ">" $input_file) >> $QCLOG
+
+# Prepare output directory
 mkdir -p $output_dir
 
 
-module load usearch
-## orient the files with reference to hxb2 ##
-mkdir -p $oriented_outFile
-cd $oriented_outFile
-echo "Correct orientation!"
-usearch -orient $inputFile -db $referenceFile -fastaout $oriented_outFile"/orient_"$file".fasta" -notmatched $oriented_outFile"/noMatch_"$file".fasta"
-cat $oriented_outFile"/orient_"$file".fasta" $oriented_outFile"/noMatch_"$file".fasta" > $oriented_outFile"/oriented_"$file".fasta"
-rm $oriented_outFile"/noMatch_"$file".fasta" $oriented_outFile"/orient_"$file".fasta"
-echo "Reads oriented!"
-## -tabbedout text file can be added to get orientation of input sequence##
 
-#=========================================================================#
+# ----------------------------
+# ----- Read Orientation -----
+# ----------------------------
 
-module load cutadapt
+oriented_output_folder=$project"oriented"
+mkdir -p $oriented_output_folder
+oriented_file=$oriented_output_folder"/oriented_"$sample".fasta"
 
-#sequences shorter than 90% of the length of the insert are trimmed#
+echo $(date) "Orienting reads with vsearch --orient" >> $QCLOG
+#usearch -orient $input_file -db $referenceFile -fastaout $oriented_file -threads $njobs
+vsearch --orient $input_file --db $referenceFile --fastaout $oriented_file --threads $njobs
+echo $(date) "Reads oriented!" >> $QCLOG
+echo $(date) "Number of CCS reads oriented:" $(grep -c ">" $oriented_file) >> $QCLOG
+
+
+
+# -------------------------------
+# ----- PCR Primer Trimming -----
+# -------------------------------
+
+# Trim PCR primers; sequences between $min_length and $max_length (after PCR primers removed) are kept
 mkdir -p $project"/trimmed"
 
-orientedFile=$oriented_outFile"/oriented_"$file".fasta"
-untrimmedFile=$project"/trimmed/"$file"_untrimmed.fasta"
-trimmedFile=$project"/trimmed/"$file"_trimmed.fasta"
-shortFile=$project"/trimmed/"$file"_short.fasta"
-longFile=$project"/trimmed/"$file"_long.fasta"
+orientedFile=$oriented_output_folder"/oriented_"$sample".fasta"
+untrimmedFile=$project"/trimmed/"$sample"_untrimmed.fasta"
+trimmedFile=$project"/trimmed/"$sample"_trimmed.fasta"
+shortFile=$project"/trimmed/"$sample"_short.fasta"
+longFile=$project"/trimmed/"$sample"_long.fasta"
 
-echo "Trim primers and filter by length"
-cutadapt -e $error -g $forward -g $forwardPrimer_RC $orientedFile | cutadapt -e $error -a $reverse -a $reversePrimer_RC --minimum-length $minLength --too-short-output $shortFile --maximum-length $maxLength --too-long-output $longFile --untrimmed-output $untrimmedFile - > $trimmedFile
+untrimmedForwardFile=$project"/trimmed/"$sample"_untrimmedF.fasta"
+trimmedForwardFile=$project"/trimmed/"$sample"_trimmedF.fasta"
 
-#=========================================================================#
-
- module unload python
- module load Anaconda3/2020.07
- source activate umi-error
-
- # Note the path of the python pacbio-pipeline. This shell command is expected to be run in the directory of the shell script.
-
- python "scripts/bin_by_UMI.py" $RTprimer_RC $project $file
-
- # This will make the folders required for the next phase. We separate this from the python script for parallel execution
- mkdir -p $project"sequences/"$file
- mkdir -p $project"sequences/"$file"/trimmed"
- mkdir -p $project"sequences/"$file"/centroid_usearch"
- mkdir -p $project"sequences/"$file"/consensus_usearch"
- mkdir -p $project"sequences/"$file"/cluster_usearch"
-
- # This extracts umi reads into their own files executed in parallel
- xargs -l -P 8 python "scripts/extract_seq.py" $project $file< $project"umi_stats/"$file"_umi_seq.txt"
- xargs -l -P 8 bash "scripts/cluster_bins.sh" $RTprimer_RC $project $file< $project"umi_stats/"$file"_umi_seq.txt"
- xargs -l python "scripts/read_uc_file.py" $project $file< $project"umi_stats/"$file"_umi_seq.txt"
- # next steps move reads into individual clusters for umis that could have collision
- # Does nothing for umis without collision
- cut -d "," -f 1 $project"umi_collision/"$file"collision.txt" > $project"umi_collision_all.tmp"
- if [ -s $project"umi_collision_all.tmp" ]
- then xargs -l python "scripts/umi_cluster_reads.py" $project $file< $project"umi_collision_all.tmp"
- fi
- # Cleans up useless files
- rm $project"umi_collision_all.tmp"
- find $project"error_insert" -size 0 -delete
- find $project"umi_collision" -size 0 -delete
-
- # Moves all the final reads to the same file
- mkdir -p $tobe_blasted
- cp $project"sequences/"$file"/cluster_with_read_counts/"$file"read.fasta" $tobe_blasted"/"$file"read.fasta"
+echo $(date) "Trimming primers and filtering by length with cutadapt" >> $QCLOG
+cutadapt -j $njobs -e $error -g $forward --untrimmed-output $untrimmedForwardFile $orientedFile > $trimmedForwardFile
+cutadapt -j $njobs -e $error -a $reversePrimer_RC --minimum-length $minLength --too-short-output $shortFile --maximum-length $maxLength --too-long-output $longFile --untrimmed-output $untrimmedFile $trimmedForwardFile > $trimmedFile
+echo $(date) "Reads trimmed!" >> $QCLOG
+echo $(date) "Number of CCS reads after trimming:" $(grep -c ">" $trimmedFile) >> $QCLOG
 
 
- bash "scripts/blast_nr.sh" $project"Tobe_blasted/" $file"read"
- 
- mkdir -p $project"Tobe_blasted/cov_headers"
- grep -i "coronavirus" $project"Tobe_blasted/Blast/"$file"read_out.out" | cut -f 1 | sort |uniq > $project"Tobe_blasted/cov_headers/"$file"_cov_headers.txt"
- python "scripts/down_select_seqs.py" $project"Tobe_blasted/"$file"read.fasta" $project"Tobe_blasted/cov_headers/"$file"_cov_headers.txt" $project"final_ccs_reads/"$file"read.fasta"  
+# -----------------------
+# ----- UMI Binning -----
+# -----------------------
 
- # Does fake umi removal
- uniq_umis=$(wc -l < $project"umi_stats/"$file"_umi_seq.txt")
+mkdir -p $project"/umi-stats/"
+echo "Using python executable at" $(which python)
+echo $(date) "Binning by UMI..." >> $QCLOG
+python3 $SCRIPT_DIR/bin_umis.py $trimmedFile $RTprimer_RC $project"/umi-stats/" $umiLength >> $QCLOG
+echo $(date) "Done." >> $QCLOG
+echo $(date) "Number of preliminary unique UMIs:" $(wc -l < $project"/umi-stats/"$sample"_counts.txt") >> $QCLOG
 
- if [[ uniq_umis -le 500 ]]; then
- 	num_cores=1
- elif [[ uniq_umis -gt 500 && uniq_umis -le 1500 ]]; then
- 	num_cores=16
- elif [[ uniq_umis -gt 1500 && uniq_umis -le 2500 ]]; then
- 	num_cores=32
- elif [[ uniq_umis -gt 2500 ]]; then
- 	num_cores=64
- fi
+echo $(date) "Preliminary UMI stats:" >> $QCLOG
+python3 $SCRIPT_DIR/umi_stats.py < $project"/umi-stats/"$sample"_counts.txt" >> $QCLOG
 
- if [[ "$gen_dist" == "nogen" ]]
- then
- 	qsub -pe round $num_cores "scripts/remove_fake_umis_nogen.sh" $project $file $num_cores
- else
- 	# Do alignment
- 	bash "scripts/mafft.sh" $project"final_ccs_reads/" $file"read"
- 	qsub -pe round "$num_cores" "scripts/remove_fake_umis.sh" "$project" "$file" "$num_cores" 
- fi
- 
+
+# This will make the folders required for the next phase. We separate this from the python script for parallel execution
+rm -r $project"bins/"$sample
+mkdir -p $project"bins/"$sample
+mkdir -p $project"bins/"$sample"/with_rtp"
+mkdir -p $project"bins/"$sample"/trimmed"
+mkdir -p $project"bins/"$sample"/aligned"
+mkdir -p $project"bins/"$sample"/vcf"
+mkdir -p $project"bins/"$sample"/logs"
+mkdir -p $project"bins/"$sample"/consensus"
+mkdir -p $project"bins/"$sample"/clusters"
+
+# This extracts umi reads into their own samples executed in parallel
+echo $(date) "Extracting sequences from UMI bins..." >> $QCLOG
+umi_seq=$project"umi-stats/"$sample"_umi_seq.txt"
+fasta_umi_labeled=$project"umi-stats/"$sample"_UMI.fasta"
+python3 $SCRIPT_DIR/extract_seqs.py $fasta_umi_labeled $umi_seq $project"bins/"$sample"/with_rtp"
+echo $(date) "Done." >> $QCLOG
+
+
+# -----------------------------------------------
+# ----- Preliminary Consensus Determination -----
+# -----------------------------------------------
+
+
+echo $(date) "Determining UMI consensus sequences..." >> $QCLOG
+xargs -n1 -P $(( njobs )) bash "flatten_bin.sh" $RTprimer_RC $project $sample $SCRIPT_DIR $referenceFile < $project"umi-stats/"$sample"_umi_seq.txt"
+echo $(date) "Done." >> $QCLOG
+
+#echo -e "\tNumber of bins with robust consensus:" $(cat $project"bins/"$sample"/logs/"*.log | grep -c "Robust") >> $QCLOG
+#echo -e "\tNumber of bins with putative collision:" $(cat $project"bins/"$sample"/logs/"*.log | grep -c "Putative collisions") >> $QCLOG
+
+
+# -----------------
+# ----- BLAST -----
+# -----------------
+
+# Moves all the UMI consensus sequences to the same file, then BLASTs against reference database
+consensus_folder=$project"bins/"$sample"/consensus"
+blast_dir=$project"blast/"
+blastn_dir=$blast_dir"blastn-out/"
+matches_dir=$blast_dir"matches/"
+prelim_sgs_dir=$project"sgs-prelim/"
+mkdir -p $blast_dir
+mkdir -p $blastn_dir
+mkdir -p $matches_dir
+mkdir -p $prelim_sgs_dir
+
+# Copy consensus sequences to file
+blast_input_file=$blast_dir"/"$sample".fasta"
+echo "" > $blast_input_file
+
+echo $(date) "Copying clusters..." >> $QCLOG
+ls $consensus_folder | grep "fasta\$" | while read -r file;
+do
+	 cat $consensus_folder"/"$file >> $blast_input_file
+done
+echo $(date) "Done." >> $QCLOG
+
+# Perform BLAST search and down-select matches
+echo $(date) "BLASTing consensus sequences..." >> $QCLOG
+bash "blast_nr.sh" $blast_dir $sample $dbFile $njobs
+grep -i $term $blastn_dir$sample".out" | cut -f 1 | sort | uniq > $matches_dir$sample"_matches.txt"
+echo $(date) "Down-selecting matches..." >> $QCLOG
+python3 $SCRIPT_DIR/down_select_seqs.py $blast_dir$sample".fasta" $matches_dir$sample"_matches.txt" $prelim_sgs_dir$sample".fasta"
+echo $(date) "Done." >> $QCLOG
+echo $(date) "Preliminary number of SGSs:" $(grep -c ">" $prelim_sgs_dir$sample".fasta") >> $QCLOG
+
+# ----------------------------
+# ----- Fake UMI Removal -----
+# ----------------------------
+
+echo $(date) "Aligning preliminary SGSs..." >> $QCLOG
+. mafft.sh $prelim_sgs_dir $sample $njobs
+echo $(date) "Done." >> $QCLOG
+
+
+mkdir -p $prelim_sgs_dir"sgs-consensus/"
+mkdir -p $prelim_sgs_dir"fingerprints/"
+mkdir -p $prelim_sgs_dir"fake-umi/"
+
+# Identify PCR fingerprints + distinctive mutations
+echo $(date) "Determining PCR fingerprints..." >> $QCLOG
+python3 $SCRIPT_DIR/scan_fingerprints.py $project $sample $njobs
+echo $(date) "Skipped." >> $QCLOG
+
+# Do fake UMI removal
+echo $(date) "Removing fake UMIs..." >> $QCLOG
+python3 $SCRIPT_DIR/remove_fake_umis.py $project $sample > $prelim_sgs_dir"fake-umi/"$sample"_pairs.txt"
+echo $(date) "Final number of SGSs:" $(grep -c ">" $prelim_sgs_dir"fake-umi/"$sample".fasta") >> $QCLOG
+
+
+# ----------------------------------
+# ----- Consensus Finalization -----
+# ----------------------------------
+
+pcr_dir=$prelim_sgs_dir"pcr-reversions/"
+pcr_corrections=$pcr_dir"/"$sample"_pcr.txt"
+mkdir -p $pcr_dir
+touch $pcr_corrections
+
+# PCR error removal: revert PCR errors that coincide with consensus sites to the consensus base
+echo $(date) "Correcting PCR errors..." >> $QCLOG
+python3 $SCRIPT_DIR/revert_pcr_errors.py $project $sample $output_dir$sample"_final.fasta" > $pcr_corrections
+echo $(date) "Number of PCR errors corrected:" $(wc -l < $pcr_corrections) >> $QCLOG
+
+
+# -----------------------------------------
+# ----- Generate Final SGS Alignments -----
+# -----------------------------------------
+
+mkdir -p $output_dir"unaligned/"
+mkdir -p $output_dir"reference-aligned/"
+
+# Within-group alignment
+echo $(date) "Aligning SGS against each other..." >> $QCLOG
+mafft --thread $njobs $output_dir$sample"_final.fasta" > $output_dir$sample".fasta"
+mv $output_dir$sample"_final.fasta" $output_dir"unaligned/"$sample".fasta"
+echo $(date) "Done." >> $QCLOG
+
+# Align against reference sequence
+echo $(date) "Aligning SGS against reference..." >> $QCLOG
+cat $referenceFile > $output_dir"reference-aligned/"$sample".fasta"
+echo $'\n' >> $output_dir"reference-aligned/"$sample".fasta"
+cat $output_dir$sample".fasta" >> $output_dir"reference-aligned/"$sample".fasta"
+mafft --thread $njobs $output_dir"reference-aligned/"$sample".fasta" > $output_dir"reference-aligned/"$sample"_aligned.fasta"
+rm $output_dir"reference-aligned/"$sample".fasta"
+echo $(date) "Done." >> $QCLOG
+
+echo $(date) "Finished processing "$sample"." >> $QCLOG

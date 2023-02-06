@@ -1,44 +1,44 @@
 #!/bin/sh
 
-# Job Name
-#$ -N batch-pipeline-with-blast
-
-# Execute the script from the current working directory
+#$ -N pbptdev
 #$ -cwd
-
-# Merge the output of the script, and any error messages generated to one file
 #$ -j y
-
 #$ -S /bin/bash
-
-# Send the output of the script to a directory called 'UGE-output' uder current working directory (cwd)
-  if [ ! -d "UGE-output" ]; then #Create output directory in case it does NOT exist
-      mkdir UGE-output
-  fi
-#$ -o UGE-output/
-
-# Send mail when the job is submitted, and when the job completes
+#$ -o /hpcdata/vrc_vpds/radeckipe/dev/umipbp-dev/job-outputs/
 #$ -m be
+#$ -pe threaded 16
+#$ -M radeckipe@nih.gov
 
-# Tell the job your memory requirements
-#$ -l h_vmem=2G
-
-# This batch processes all the fasta files in a single directory
-# to run execute the command 
-# navigate to the folder contraining the batch-script then run the following command
-# qsub batch-pipeline.sh project config_file
+# ./batch-pacbio-pipeline-with-blast.sh project config_file
 # project: the folder where all the fasta files are. There must be a / at the end.
 # config_file: This is the config script that loads all the variables.
-#		Config files are located in the folder config-scipts.
+#		Example config files are located in the folder config-scripts.
 #		This allows change of primers and read length without editing code.
 # This only operates on fasta files, so if there are other files/folders in the project directory, those are unchanged.
 
 project=$1
 config_file=$2
-gen_dist=$3
+
+echo "Project: " $project > $project/project-log.txt
+echo "Configuration file: " $config_file >> $project/project-log.txt
+echo "Genetic distance: " $gen_dist >> $project/project-log.txt
+
+module purge
+module load uge
+module load usearch
+module load "BLAST+"
+module load mafft
+module load Anaconda3/2020.07
+module load minimap2
+module load samtools/1.13-GCC-4.8.4
+module load bcftools/1.13-GCC-4.8.4
+module load seqkit
+export PATH=$PATH:/hpcdata/vrc_vpds/scripts/vsearch/vsearch-2.21.1-linux-x86_64-static/bin
+
 
 ls $project | grep "fasta\$" | rev | cut -d "." -f2- | rev | while read -r file;
 do
 	echo $file
-	qsub -pe round 8 scripts/pacbio-pipeline-with-blast.sh $project $file $config_file $gen_dist
+	module refresh
+	. /hpcdata/vrc_vpds/scripts/umipbp-dev/scripts/pacbio-pipeline-with-blast.sh $project $file $config_file
 done

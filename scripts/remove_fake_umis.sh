@@ -1,47 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
-# Job Name
-#$ -N remove_fake_umis
-
-# Execute the script from the current working directory
-#$ -cwd
-
-# Merge the output of the script, and any error messages generated to one file
-#$ -j y
-
-#$ -S /bin/bash
-cd "scripts/" # for some reason the UGE is getting put in a random folder.
-# only when running through the whole pipeline. This fixes it but no idea why it happens.
-
-# Send the output of the script to a directory called 'UGE-output' uder current working directory (cwd)
-  if [ ! -d "UGE-output" ]; then #Create output directory in case it does NOT exist
-      mkdir UGE-output
-  fi
-#$ -o UGE-output/
-
-# Tell the job your memory requirements
-#$ -l h_vmem=5G
-
-# Usage
-# bash file
-
-project=$1
+folder=$1
 file=$2
 n_cores=$3
-infl_yes=$4
 
-out_after_cur=$project"final_post_curation/gen/"
-out_dir=$project"final_unaligned_post_cur/"
+out_after_cur=$folder"sgs/"
+out_dir=$folder"sgs-unaligned/"
 mkdir -p $out_dir
 mkdir -p $out_after_cur
 
-echo $infl_yes
 # Does fake umi removal
-module unload python
-module load Anaconda3/2020.07
-source activate umi-error
-mkdir -p $project"fake-umi-curation"
-python "scripts/umi_dedup.py" $project $file $n_cores
-python "scripts/inflection_removal.py" $project $file "fake-umi-curation" $infl_yes
-cp $project"fake-umi-curation/"$file"/"$file"_final.fasta" $out_after_cur
-python "scripts/down_select_post_cur.py" $project"final_ccs_reads/"$file"read.fasta" $out_after_cur$file"_final.fasta" $out_dir$file"_unaligned_post_cur.fasta"
+mkdir -p $folder"fake-umi-curation"
+python3 $SCRIPT_DIR/umi_dedup.py $folder $file $n_cores
+python3 $SCRIPT_DIR/inflection_removal.py $folder $file "fake-umi-curation" $infl_yes
+cp $folder"fake-umi-curation/"$file"/"$file"_final.fasta" $out_after_cur
+python3 $SCRIPT_DIR/down_select_post_cur.py $folder"sgs-prelim/"$file".fasta" $out_after_cur$file"_final.fasta" $out_dir$file"_unaligned.fasta"

@@ -78,10 +78,10 @@ def prep_headers(fasta_file, infl_yes):
     Returns
     -------
     header_dict: dict
-        wether or not to keep each header
+        whether or not to keep each header
     """
 
-    headers = [[record.id] +  strip_umi(record.id).split('_') for record in fasta_file]
+    headers = [[record.id] + strip_umi(record.id).split('_') for record in fasta_file]
     headers.sort(key=lambda x: int(x[2]), reverse=True)
     header_dict = {}
     umi_counts = [int(x[2]) for x in headers]
@@ -125,12 +125,13 @@ def main(project, file_path, umi_out_folder, infl_yes):
     keeps = []
     remove = []
     for record in fasta_file:
-        if header_dict[record.id]:
-            keeps.append(record)
-        else:
-            remove.append(record)
+        keeps.append(record)
+        # if header_dict[record.id]:
+        #     keeps.append(record)
+        # else:
+        #     remove.append(record)
     # Still need to write the files.
-    # Write keeps and remove to appropraitely names files
+    # Write keeps and remove to appropriately name files
     with open(project + umi_out_folder + "/" + file_path + "/" + file_path + "_final.fasta", "w") as handle:
         SeqIO.write(keeps, handle, 'fasta')
     with open(project + umi_out_folder + "/" + file_path + "/" + file_path + "_removes_inflection.fasta", "w") as handle:

@@ -9,6 +9,7 @@ wanted_file.
 
 """
 
+import os
 import sys
 from Bio import SeqIO
 
@@ -33,12 +34,16 @@ def main(file_path, wanted_file,result_file):
     with open(wanted_file) as f:
         for line in f:
             line = line.strip()
-            if line != "":
+            if line:
                 wanted.add(line)
+
     keeps = []
     for seq in fasta_file:
-        if any(item in seq.id for item in wanted):
+        if seq.id in wanted:
             keeps.append(seq)
+
+    if os.path.exists(result_file):
+        os.remove(result_file)
     with open(result_file, "w") as f:
         SeqIO.write(keeps, f, "fasta")
 

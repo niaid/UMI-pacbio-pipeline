@@ -67,15 +67,15 @@ def main(project, file_path, number_file):
 
     if not os.path.exists(project + "sequences/" + \
                           file_path + "/cluster_stats"):
-        subprocess.check_call(['mkdir', project + "sequences/" + \
+        subprocess.check_call(['mkdir', '-p', project + "sequences/" + \
                                file_path + "/cluster_stats"])
-        subprocess.check_call(['mkdir', project + "sequences/" + \
+        subprocess.check_call(['mkdir', '-p', project + "sequences/" + \
                                file_path + "/cluster_with_read_counts"])
     if not os.path.exists(project + "umi_collision"):
-        subprocess.check_call(['mkdir', project + "umi_collision"])
+        subprocess.check_call(['mkdir', '-p', project + "umi_collision"])
 
     if not os.path.exists(project + 'error_insert'):
-        subprocess.check_call(['mkdir', project + "error_insert"])
+        subprocess.check_call(['mkdir', '-p', project + "error_insert"])
     
     cluster_file_path = project + "sequences/" + file_path
     fasta_file = cluster_file_path + "/cluster_stats/"+ str(number_file)+"_read.fasta"
@@ -110,7 +110,7 @@ def main(project, file_path, number_file):
 
         total = sum(read_count_list)
         list_index = np.argmax(read_count_list)
-        str_read_count  = [str(x) for x in read_count_list]
+        str_read_count = [str(x) for x in read_count_list]
         # We should add a bit of code here to select further using thresholds
         if float(read_count_list[list_index])/total >= tau1:  
             fout.write('>' + file_path + '_' + fasta_sequences[list_index].id)
@@ -125,14 +125,16 @@ def main(project, file_path, number_file):
                 umi_collision_file.write(number_file + ',' + str(total) + "," + ",".join(str_read_count) + '\n')
                 umi_col_fasta.write('>' + file_path + '_' + fasta_sequences[list_index].id)
                 umi_col_fasta.write('\n'+str(fasta_sequences[list_index].seq)+'\n')
-                shutil.copy(cluster_file_path + "/" + number_file + "_seq.fasta",\
+                shutil.copy(cluster_file_path + "/" + number_file + "_seq.fasta", \
                     project + "umi_collision/" + str(file_path) + "_" + number_file +".fasta")
             else:
                 error_file.write(number_file + ',' + str(total) + "," + ",".join(str_read_count) + '\n')
                 error_fasta.write('>' + file_path + '_' + fasta_sequences[list_index].id)
                 error_fasta.write('\n'+str(fasta_sequences[list_index].seq)+'\n')
-                shutil.copy(cluster_file_path + "/" + number_file + "_seq.fasta",\
+                shutil.copy(cluster_file_path + "/" + number_file + "_seq.fasta", \
                     project + "error_insert/" + str(file_path) + "_" + number_file + ".fasta")
+
+
 if __name__ == '__main__':
     PROJECT = sys.argv[1]
     FILE_PATH = sys.argv[2]

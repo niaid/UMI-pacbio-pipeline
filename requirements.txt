@@ -1,8 +1,9 @@
-biopython
+Biopython
 joblib
-kneebow
 tqdm
 networkx
 numpy
 pandas
 pysam
+scipy
+matplotlib

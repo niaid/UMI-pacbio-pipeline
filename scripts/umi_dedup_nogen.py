@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-This module executes fake umi removal without considering genetic distance
-It only looks at edit distance one pairs.
-"""
 
 import sys
 import os
@@ -14,24 +9,24 @@ import networkx as nx
 from Bio import SeqIO
 from tqdm import tqdm
 
-#pylint: disable=E1101, C0200
-def strip_umi(header_string):
+
+def parse_umi_id(sequence_name):
     """
     Parameters
     ----------
-    header_string : str
-        This is the header of the fasta file.
+    sequence_name : str
+        Name of a UMI-labeled sequence (<sample>_<UMI>_<UMI counts>)
 
     Returns
     -------
-    header_string : str
-        umi_number of reads in that umi bin after 99% consensus clustering.
+    umi_id : str
+        <UMI>_<UMI counts>
 
     """
-    #header_string = header_string.split(".")[1]
-    header_string = header_string.split("_")[3:5]
-    header_string = "_".join(header_string)
-    return header_string
+    umi_id = sequence_name.split("_")[-2:]
+    umi_id = "_".join(umi_id)
+    return umi_id
+
 
 def hamming_distance(string1, string2):
     """
@@ -157,14 +152,15 @@ def main(project, file_path, n_jobs):
 
     """
 
-    fasta_path = project + "final_ccs_reads/" + file_path + "read.fasta"
+    fasta_path = project + "sgs-prelim/" + file_path + ".fasta"
     fasta_file = list(SeqIO.parse(fasta_path, "fasta"))
     fasta_file_dict = dict(zip(range(len(fasta_file)), fasta_file))
-    umi_count_dict = {x:(strip_umi(fasta_file_dict[x].id).split('_')[0],\
-                         strip_umi(fasta_file_dict[x].id).split('_')[1])\
+    umi_count_dict = {x: (parse_umi_id(fasta_file_dict[x].id).split('_')[0],
+                          parse_umi_id(fasta_file_dict[x].id).split('_')[1])
                       for x in fasta_file_dict}
+
     print('making distance matrix')
-    umi_graph = make_umi_graph(umi_count_dict, n_jobs)
+    umi_graph = make_umi_graph(umi_count_dict, n_jobs)  # nx.Graph()
     merge_dict = {}
     isolated_list = []
     for component in nx.connected_components(umi_graph):
@@ -178,21 +174,31 @@ def main(project, file_path, n_jobs):
     remove_list = [fasta_file_dict[item] for sublist in merge_dict.values() for item in sublist]
     keep_list = [fasta_file_dict[item] for item in list(merge_dict.keys()) + isolated_list]
 
-    write_folder = project + "fake-umi-curation-nogen/" + file_path
+    write_folder = f'{project}/fake-umi-curation/{file_path}'
     if not os.path.exists(write_folder):
         subprocess.check_call(['mkdir', write_folder])
 
-    print("Writing Selected UMIs")
-    with open(write_folder + "/" + file_path +'_keep_nw.fasta', 'w') as outfile:
-        SeqIO.write(keep_list, outfile, 'fasta')
 
-    with open(write_folder + "/" + file_path + '_remove_nw.fasta', "w") as handle:
-        SeqIO.write(remove_list, handle, "fasta")
+    fp_fake = os.path.join(write_folder, f'{file_path}_fake.fasta')
+    fp_edges = os.path.join(write_folder, f'{file_path}_edges.csv')
+    for file in [fp_fake, fp_edges]:
+        if os.path.exists(file):
+            os.remove(file)
 
-    with open(write_folder + "/" + file_path + "edit_dist_1_pairs.csv", "w") as handle:
+
+
+    # print("Writing Selected UMIs")
+    # with open(write_folder + "/" + file_path +'_post_nw.fasta', 'w') as outfile:
+    #     SeqIO.write(keep_list, outfile, 'fasta')
+
+    with open(fp_fake, "w") as f:
+        SeqIO.write(remove_list, f, "fasta")
+
+    with open(fp_edges, "w") as f:
         for item in umi_graph.edges:
-            print(f"{fasta_file_dict[item[0]].id},{fasta_file_dict[item[1]].id}",\
-                  file=handle)
+            f.write(f"{fasta_file_dict[item[0]].id}, {fasta_file_dict[item[1]].id}")
+
+
 if __name__ == '__main__':
     PROJECT = sys.argv[1]
     FILE_PATH = sys.argv[2]

@@ -28,8 +28,10 @@ def main(project, file_path, number_file):
             if umi == number_file:
                 SeqIO.write([seq], eq_umi_file, "fasta")
 
+
 if __name__ == '__main__':
     PROJECT = sys.argv[1]
     FILE_PATH = sys.argv[2]
     NUMBER_FILE = sys.argv[3]
+    print(NUMBER_FILE)
     main(PROJECT, FILE_PATH, NUMBER_FILE)
