@@ -6,3 +6,4 @@ networkx
 numpy
 pandas
 pysam
+Levenshtein
