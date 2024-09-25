@@ -44,6 +44,9 @@ else
 
 fi
 
+echo $(date) "Starting to analyze sample:" $input_file
+echo "Maximum number of jobs to use:" $njobs
+
 echo $(date) "Starting to analyze sample:" $input_file >> $QCLOG
 echo $(date) "Number of CCS reads:" $(grep -c ">" $input_file) >> $QCLOG
 
@@ -60,6 +63,7 @@ oriented_output_folder=$project"oriented"
 mkdir -p $oriented_output_folder
 oriented_file=$oriented_output_folder"/oriented_"$sample".fasta"
 
+echo "Orienting reads with vsearch --orient..."
 echo $(date) "Orienting reads with vsearch --orient" >> $QCLOG
 #usearch -orient $input_file -db $referenceFile -fastaout $oriented_file -threads $njobs
 vsearch --orient $input_file --db $referenceFile --fastaout $oriented_file --threads $njobs
@@ -84,9 +88,10 @@ longFile=$project"/trimmed/"$sample"_long.fasta"
 untrimmedForwardFile=$project"/trimmed/"$sample"_untrimmedF.fasta"
 trimmedForwardFile=$project"/trimmed/"$sample"_trimmedF.fasta"
 
+echo "Trimming primers and filtering by length with cutadapt..."
 echo $(date) "Trimming primers and filtering by length with cutadapt" >> $QCLOG
-cutadapt -j $njobs -e $error -g $forward --untrimmed-output $untrimmedForwardFile $orientedFile > $trimmedForwardFile
-cutadapt -j $njobs -e $error -a $reversePrimer_RC --minimum-length $minLength --too-short-output $shortFile --maximum-length $maxLength --too-long-output $longFile --untrimmed-output $untrimmedFile $trimmedForwardFile > $trimmedFile
+cutadapt --report=minimal -j $njobs -e $error -g $forward --untrimmed-output $untrimmedForwardFile $orientedFile > $trimmedForwardFile
+cutadapt --report=minimal -j $njobs -e $error -a $reversePrimer_RC --minimum-length $minLength --too-short-output $shortFile --maximum-length $maxLength --too-long-output $longFile --untrimmed-output $untrimmedFile $trimmedForwardFile > $trimmedFile
 echo $(date) "Reads trimmed!" >> $QCLOG
 echo $(date) "Number of CCS reads after trimming:" $(grep -c ">" $trimmedFile) >> $QCLOG
 
@@ -96,7 +101,8 @@ echo $(date) "Number of CCS reads after trimming:" $(grep -c ">" $trimmedFile) >
 # -----------------------
 
 mkdir -p $project"/umi-stats/"
-echo "Using python executable at" $(which python)
+echo $(date) "Using python executable at" $(which python) >> $QCLOG
+echo "Binning reads by their UMI..."
 echo $(date) "Binning by UMI..." >> $QCLOG
 python3 $SCRIPT_DIR/bin_umis.py $trimmedFile $RTprimer_RC $project"/umi-stats/" $umiLength >> $QCLOG
 echo $(date) "Done." >> $QCLOG
@@ -129,7 +135,7 @@ echo $(date) "Done." >> $QCLOG
 # ----- Preliminary Consensus Determination -----
 # -----------------------------------------------
 
-
+echo "Determining UMI consensus sequences..."
 echo $(date) "Determining UMI consensus sequences..." >> $QCLOG
 xargs -n1 -P $(( njobs )) bash "flatten_bin.sh" $RTprimer_RC $project $sample $SCRIPT_DIR $referenceFile < $project"umi-stats/"$sample"_umi_seq.txt"
 echo $(date) "Done." >> $QCLOG
@@ -173,12 +179,15 @@ python3 $SCRIPT_DIR/down_select_seqs.py $blast_dir$sample".fasta" $matches_dir$s
 echo $(date) "Done." >> $QCLOG
 echo $(date) "Preliminary number of SGSs:" $(grep -c ">" $prelim_sgs_dir$sample".fasta") >> $QCLOG
 
+echo "Preliminary number of SGSs:" $(grep -c ">" $prelim_sgs_dir$sample".fasta")
+
 # ----------------------------
 # ----- Fake UMI Removal -----
 # ----------------------------
 
+echo "Removing fake UMI bins..."
 echo $(date) "Aligning preliminary SGSs..." >> $QCLOG
-. mafft.sh $prelim_sgs_dir $sample $njobs
+. mafft.sh $prelim_sgs_dir $sample $njobs 2> /dev/null
 echo $(date) "Done." >> $QCLOG
 
 
@@ -192,7 +201,7 @@ echo $(date) "Removing fake bins..." >> $QCLOG
 for f in $project"bins/"$sample"/trimmed/"*-cc.fasta;
 do
   umi=$(echo $f | rev | cut -d/ -f1 | rev | cut -d- -f1);
-  mafft --thread $njobs --6merpair --keeplength --addfragments $project"bins/"$sample"/trimmed/"$umi-cc.fasta $project"bins/"$sample"/consensus/"$umi.fasta > $project"bins/"$sample"/aligned/"$umi-aligned.fasta;
+  mafft --thread $njobs --6merpair --keeplength --addfragments $project"bins/"$sample"/trimmed/"$umi-cc.fasta $project"bins/"$sample"/consensus/"$umi.fasta > $project"bins/"$sample"/aligned/"$umi-aligned.fasta 2> /dev/null;
 done
 
 
@@ -200,17 +209,20 @@ done
 python3 $SCRIPT_DIR/remove_fake_umis_emp.py $project $sample > $prelim_sgs_dir"fake-umi/"$sample"_pairs.txt"
 echo $(date) "Final number of SGSs:" $(grep -c ">" $output_dir/$sample"_final.fasta") >> $QCLOG
 
+echo "Final number of SGSs:" $(grep -c ">" $output_dir/$sample"_final.fasta")
 
 # -----------------------------------------
 # ----- Generate Final SGS Alignments -----
 # -----------------------------------------
 
+
+echo "Generating final alignments..."
 mkdir -p $output_dir"unaligned/"
 mkdir -p $output_dir"reference-aligned/"
 
 # Within-group alignment
 echo $(date) "Aligning SGS against each other..." >> $QCLOG
-mafft --thread $njobs $output_dir$sample"_final.fasta" > $output_dir$sample".fasta"
+mafft --thread $njobs $output_dir$sample"_final.fasta" > $output_dir$sample".fasta" 2> /dev/null
 mv $output_dir$sample"_final.fasta" $output_dir"unaligned/"$sample".fasta"
 echo $(date) "Done." >> $QCLOG
 
@@ -219,8 +231,9 @@ echo $(date) "Aligning SGS against reference..." >> $QCLOG
 cat $referenceFile > $output_dir"reference-aligned/"$sample".fasta"
 echo $'\n' >> $output_dir"reference-aligned/"$sample".fasta"
 cat $output_dir$sample".fasta" >> $output_dir"reference-aligned/"$sample".fasta"
-mafft --thread $njobs $output_dir"reference-aligned/"$sample".fasta" > $output_dir"reference-aligned/"$sample"_aligned.fasta"
+mafft --thread $njobs $output_dir"reference-aligned/"$sample".fasta" > $output_dir"reference-aligned/"$sample"_aligned.fasta" 2> /dev/null
 rm $output_dir"reference-aligned/"$sample".fasta"
 echo $(date) "Done." >> $QCLOG
 
 echo $(date) "Finished processing "$sample"." >> $QCLOG
+echo $(date) "Finished processing "$sample"."

@@ -38,7 +38,6 @@ The following Python packages are also required:
 * pysam
 * scipy
 * matplotlib
-* Levenshtein
 
 ## Usage
 
@@ -53,13 +52,12 @@ Upon completion, final single-copy sequences are placed in a folder named `sgs` 
 ## Pipeline components:
 
 `pacbio-pipeline-with-blast.sh` performs a complete analysis towards SGS, although the pipeline is broken down into components and scripts that may be run individually. Major steps are listed below; check the source code for additional information on the syntax of specific scripts.
-`revert-mutations-reference.py` analyzes SGS sequences with RT errors, defines a variant calling threshold, and reverts variation below the threshold to the consensus. Haplotypes are called here.
 
 ### Preprocessing: Orientation and Primer Trimming
 - `vsearch` is used to orient reads against the provided reference sequence.
 - `cutadapt` is used to trim PCR forward and reverse primers. 
 	
-### UMI Binning (`bin_umis.py`)
+### UMI Binning
 - Attempts to match RT primer sequence to trimmed reads; if successful, the UMI is extracted and stored.
 - The relevant section of the read can differ from the provided RT primer sequence by up to 1 base.
 - UMIs with 10 CCS or more are kept as putative bins for consensus calling.
@@ -73,20 +71,26 @@ Upon completion, final single-copy sequences are placed in a folder named `sgs` 
 - Bin consensus sequences are compared to the reference sequence with `blastn`; only sequences which are similar to the reference are kept.
 
 ### Fake UMI Removal
-- UMIs that are 1-base edit distance away from each other are compared; if one bin is greater than 2x the size of the other, the smaller bin is deemed fake. Its read count is added to the larger bin, but the reads are not re-processed.
-- PCR errors for each bin are compiled; error positions are used as fingerprints to associate bins with each other. UMIs that share fingerprints are merged.
+- UMIs that are 1-base edit distance away from each other are compared; if one bin is greater than 2x the size of the other, the smaller bin is deemed fake. Its read count is added to the larger bin, but the bin is not re-processed.
+- PCR errors for each bin are compiled; error positions are used as fingerprints to associate bins with each other. UMIs with 1-base edit distance that share fingerprints are merged into the largest bin regardless of read count imbalance.
 
 ### Final SGS Alignment
 - Polished consensus sequences are written to the `$folder/sgs/` folder. Sequences are provided in 3 schemes: intra-sample aligned, aligned against the reference, and unaligned.
 
-### Variant and Haplotype Calling
-- Run `revert-mutations-reference.py` on aligned SGS sequences to call variants and haplotypes in each sample.
+## Post Processing of SGS
 
+Before proceeding, it is highly recommended to manually review and curate the alignment. Truncated and/or defective sequences may be removed at this stage if they are encountered. The alignment of all insertions, deletions, and homopolymer regions should be reviewed.
+
+### Haplotype Calling
+- To call haplotypes, run `revert-mutations-reference.py` on a curated alignment of the called single-genome sequences.
+- Example: `python3 scripts/revert-mutations-reference.py path/to/sgs-alignment.fasta`
+- This step is not automatically performed after calling single-genome sequences because it is highgly recommended to manually review the final SGS alignment before post-processing sequences.
+- A high-quality alignment is critical to ensure proper variant calling and minimize false positives.
+- Haplotypes will only be called within the region that is included as a reference (the reference is assumed to be the first sequence in the curated alignment).
 
 ## Citation
 
 If you use this pipeline in your work, please cite:
 
-[Ko SH, Bayat Mokhtari E, Mudvari P, Stein S, Stringham CD, et al. (2021) High-throughput, single-copy sequencing reveals SARS-CoV-2 spike variants coincident with mounting humoral immunity during acute COVID-19. PLOS Pathogens 17(4): e1009431.](https://doi.org/10.1371/journal.ppat.1009431)
-
+[Ko SH, Radecki P, et al. (2024) Rapid intra-host diversification and evolution of SARS-CoV-2 in advanced HIV infection. Nature Communications 15(7240). doi: 10.1038/s41467-024-51539-8](https://doi.org/10.1038/s41467-024-51539-8)
 

@@ -218,3 +218,5 @@ if __name__ == "__main__":
         for n, seq in enumerate(sorted(haplotypes, key=lambda s: haplotypes[s], reverse=True)):
             nucs = ''.join(seq)
             f.write(f'>H{n + 1}_{haplotypes[seq]}\n{nucs}\n')
+
+    print(f"Wrote outputs:\n\t{fasta_in.replace('.fa', '-reverted.fa')}\n\t{fasta_in.replace('.fa', '-haplotypes.fa')}")
