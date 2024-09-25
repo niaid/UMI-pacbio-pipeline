@@ -85,7 +85,7 @@ Before proceeding, it is highly recommended to manually review and curate the al
 ### Haplotype Calling
 - To call haplotypes, run `revert-mutations-reference.py` on a curated alignment of the called single-genome sequences.
 - Example: `python3 scripts/revert-mutations-reference.py path/to/sgs-alignment.fasta`
-- This step is not automatically performed after calling single-genome sequences because it is highgly recommended to manually review the final SGS alignment before post-processing sequences.
+- This step is not automatically performed after calling single-genome sequences because it is highly recommended to manually review the final SGS alignment before post-processing sequences.
 - A high-quality alignment is critical to ensure proper variant calling and minimize false positives.
 - Haplotypes will only be called within the region that is included as a reference (the reference is assumed to be the first sequence in the curated alignment).
 
