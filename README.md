@@ -49,7 +49,7 @@ Inputs are provided in the following way:
 
 Upon completion, final single-copy sequences are placed in a folder named `sgs` within the folder containing the specified FASTA input.
 
-## Pipeline components:
+## Pipeline Components
 
 `pacbio-pipeline-with-blast.sh` performs a complete analysis towards SGS, although the pipeline is broken down into components and scripts that may be run individually. Major steps are listed below; check the source code for additional information on the syntax of specific scripts.
 
