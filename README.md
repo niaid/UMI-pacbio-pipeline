@@ -73,6 +73,7 @@ Upon completion, final single-copy sequences are placed in a folder named `sgs` 
 ### Fake UMI Removal
 - UMIs that are 1-base edit distance away from each other are compared; if one bin is greater than 2x the size of the other, the smaller bin is deemed fake. Its read count is added to the larger bin, but the bin is not re-processed.
 - PCR errors for each bin are compiled; error positions are used as fingerprints to associate bins with each other. UMIs with 1-base edit distance that share fingerprints are merged into the largest bin regardless of read count imbalance.
+- A mixture model of real vs. fake bins is optimized by the bin size data (real: Gaussian; fake: exponential) and any known fake UMIs. Any bins with Prob(fake | bin size) ≤ 0.5 are discarded.
 
 ### Final SGS Alignment
 - Polished consensus sequences are written to the `$folder/sgs/` folder. Sequences are provided in 3 schemes: intra-sample aligned, aligned against the reference, and unaligned.
