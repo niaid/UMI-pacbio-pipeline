@@ -38,6 +38,7 @@ The following Python packages are also required:
 * pysam
 * scipy
 * matplotlib
+* Levenshtein
 
 ## Usage
 
