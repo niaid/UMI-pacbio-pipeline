@@ -1,10 +1,19 @@
 from collections import Counter
+from Bio.Data import IUPACData
+
+ambiguous_to_unambiguous = {key: list(value) for key, value in IUPACData.ambiguous_dna_values.items()}
 
 
 def hamming(s1, s2):
     if len(s1) != len(s2):
         raise ValueError("Sequence lengths provided to hamming function are not equal.")
     return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
+
+
+def hamming_degenerate(s1, s2):
+    if len(s1) != len(s2):
+        raise ValueError("Sequence lengths provided to hamming function are not equal.")
+    return sum(ch1 not in ambiguous_to_unambiguous[ch2] for ch1, ch2 in zip(s1, s2))
 
 
 def qhamming(s1, s2, limit=1):

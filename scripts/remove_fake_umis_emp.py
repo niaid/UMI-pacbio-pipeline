@@ -135,7 +135,7 @@ if __name__ == "__main__":
             cons = next(sfp)[1]
             seqs = {record[0]: record[1] for record in sfp}
 
-        map = pairwise2.align.globalms(cons, sgs_seqs[sgs_name_umi], 2, -1, -5, -.6, one_alignment_only=True,
+        map = pairwise2.align.globalms(cons, sgs_seqs[sgs_name_umi].replace('-', ''), 2, -1, -5, -.6, one_alignment_only=True,
                                        penalize_end_gaps=False)[0]
 
         map_sgs2bin = dict()

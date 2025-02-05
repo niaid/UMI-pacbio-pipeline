@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from scipy.ndimage import gaussian_filter1d
-from seqlib import hamming
+from seqlib import hamming_degenerate
 
 matplotlib.use('Agg')
 
@@ -28,7 +28,7 @@ def bin_umis(seqs, rtp_sequence, umi_len, fp_umi_labeled, qc=True):
         for name, seq in seqs:
             read_count += 1
             rtp_detected = seq[-(len(rtp_sequence) + umi_len):-umi_len]  # Get RT primer sequence
-            if hamming(rtp_detected, rtp_sequence) <= 2:  # Check if consistent with designed RTP sequence
+            if hamming_degenerate(rtp_detected, rtp_sequence) <= 2:  # Check if consistent with designed RTP sequence
                 umi = seq[-umi_len:]
                 if umi in umi_map_dict:
                     umi_map_dict[umi].append(name)
